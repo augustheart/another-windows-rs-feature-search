@@ -23,7 +23,7 @@ jobs:
     - uses: actions/checkout@v4
     #- run: rustup target add x86_64-pc-windows-msvc
     - name: build binary
-      run: cargo run --target x86_64-pc-windows-msvc -r -1
+      run: cargo run --target x86_64-pc-windows-msvc -r -- -1
     - name: show result
       shell: bash
       run: ls -lh
