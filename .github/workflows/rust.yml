@@ -16,9 +16,10 @@ jobs:
       id: ver
       shell: bash
       run: |
-        VERSION=${GITHUB_SHA::7}
-        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-        echo "$VERSION"
+       $short = $env:GITHUB_SHA.Substring(0,7)
+       $version = "v-$short"
+       "version=$version" >> $env:GITHUB_OUTPUT
+       Write-Host "版本号为: $version"
     - uses: actions/checkout@v4
     - run: rustup target add x86_64-pc-windows-msvc
     - name: build binary
@@ -30,7 +31,7 @@ jobs:
       run: mkdir release
     - name: build zip
       shell: bash
-      run: 7z a -tzip -mx=9 release/windows_rs_feature-${GITHUB_SHA::7}.zip *.html *.json
+      run: 7z a -tzip -mx=9 release/windows_rs_feature-${{steps.ver.version}}.zip *.html *.json
     - name: upload
       uses: actions/upload-artifact@v4
       with:
