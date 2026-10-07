@@ -26,13 +26,16 @@ fn main()->ExitCode {
                         let json_str = serde_json::to_string(&s).unwrap_or_default();
                         if let Ok(mut out) = std::fs::File::create(out_name){
                             let _ = out.write(json_str.as_bytes());
+                            println!("write {} success", out_name_s);
                         }else{
                             eprintln!("create file {} fail",out_name_s);
                             return ExitCode::from(4);
                         }
                         let out_html_s =  "index.html";
+                        println!("write ui file {}", out_html_s);
                         if let Ok(mut out_html) = std::fs::File::create(out_html_s){
                             let _ = out_html.write(TEMPL.replace("{{json}}", &json_str).as_bytes());
+                            println!("write {} success", out_name_s);
                         }else{
                             eprintln!("create file {} fail", out_html_s);
                             return ExitCode::from(5);
