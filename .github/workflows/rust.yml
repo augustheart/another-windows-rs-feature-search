@@ -16,6 +16,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - run: rustup target add x86_64-pc-windows-gnu
     - name: build binary
       run: cargo r --target x86_64-pc-windows-gnu -r 0
 
