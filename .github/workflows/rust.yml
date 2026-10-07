@@ -47,6 +47,7 @@ jobs:
       with:
         name: release-assest
         path: release
+    - uses: actions/checkout@v4
     - name: do release
       run: gh release create ${{ steps.ver.outputs.version }} release/*.zip --title "Release ${{ steps.ver.outputs.version }}" --generate-notes
       env:
