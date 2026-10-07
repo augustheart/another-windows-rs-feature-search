@@ -41,6 +41,8 @@ jobs:
   release:
     needs: build
     runs-on: windows-2025-vs2026
+    permissions: 
+      contents: write
     steps:
     - name: fetch package
       uses: actions/download-artifact@v4
