@@ -7,7 +7,9 @@ When using the Windows API with Microsoft's `windows-rs` crate, we need to know 
 So I built this tool. It uses `syn` to analyze the required features from `.cargo/registry/src/index.crates.io-*/windows-<version>/` and then builds the correct feature mappings for APIs.
 
 Known issues:
-- Code needs cleanup; the tests currently only run on my machine.
+
+~~- Code needs cleanup; the tests currently only run on my machine.~~ add a static html page as search ui
 - No search UI; so far, the tool only provides a JSON-generating feature.
 - Not all APIs are recorded
+- No release
 - More to come
