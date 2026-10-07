@@ -39,6 +39,7 @@ jobs:
           path: release/*.zip
 
   release:
+    needs: build
     runs-on: windows-2025-vs2026
     steps:
     - name: fetch package
