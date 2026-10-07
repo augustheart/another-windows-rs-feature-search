@@ -23,7 +23,9 @@ jobs:
     - run: rustup target add x86_64-pc-windows-msvc
     - name: build binary
       run: cargo r --target x86_64-pc-windows-msvc -r 0
-    - run: ls -lh
+    - name: show result
+      shell: bash
+      run: ls -lh
     - name: make release
       run: mkdir release
     - run: zip -9 release/windows_rs_feature-${{steps.ver.version}}.zip *.html *.json
