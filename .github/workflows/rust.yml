@@ -21,9 +21,9 @@ jobs:
        "version=$version" >> $env:GITHUB_OUTPUT
        Write-Host "版本号为: $version"
     - uses: actions/checkout@v4
-    - run: rustup target add x86_64-pc-windows-msvc
+    #- run: rustup target add x86_64-pc-windows-msvc
     - name: build binary
-      run: cargo r --target x86_64-pc-windows-msvc -r 0
+      run: cargo run --target x86_64-pc-windows-msvc -r 0
     - name: show result
       shell: bash
       run: ls -lh
