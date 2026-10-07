@@ -1,4 +1,4 @@
-use std::{collections::HashMap, env::self, io::{Read, Write}, path::{Path, PathBuf}, process::ExitCode};
+use std::{collections::HashMap, env::self, io::{Write}, path::{Path, PathBuf}, process::ExitCode};
 use syn;
 use serde_json;
 use serde::{Deserialize,Serialize};
@@ -12,8 +12,14 @@ fn main()->ExitCode {
     let args = env::args();
     match args.len(){
         2 =>{
-            if let Ok(i) = args.into_iter().nth(1).unwrap().parse::<usize>(){
-                if let Some(selected) = mod_list.get(i){
+            if let Ok(i) = args.into_iter().nth(1).unwrap().parse::<i32>(){
+                if let Some(selected) = if i >= 0{
+                    mod_list.get(i as usize)
+                    }else if i == -1{
+                        mod_list.last()
+                    }else{
+                        None
+                    }{
                     println!("read source from {}",selected.0.to_string_lossy().to_string());
                     if let Some(root) = get_mod_from_source(&selected.0.join("src/Windows")){
                         let mut s = build_json(&root);
@@ -96,33 +102,24 @@ fn build_json(root : &ModNode)->WinFn{
     return ret;
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 struct WinFn{
     version : String,
     table : Vec<String>,
     func : Vec<FuncInfo>,
 }
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 struct FuncInfo{
     name : String,
     space : Vec<usize>,
     feature : Vec<usize>
 }
-fn read_mod_file_from_directory(d : &Path)->Option<String>{
-    let mut ret = String::new();
-    let _ = std::fs::File::open(d.join("mod.rs")).ok()?.read_to_string(&mut ret).ok()?;
-    Some(ret)
-}
-enum Key{
-    Func(String),
-    Mod(String),
-}
-
+#[derive(Default)]
 struct Func{
     feature :Vec<String>,
-    name : String,
-    sig : String,
+    name : String
 }
+#[derive(Default)]
 struct ModNode{
     name : String,
     features : Vec<String>,
@@ -191,7 +188,7 @@ fn get_mod_from_source<'a>(src : &Path)->Option<ModNode>{
                             }
 
                             //println!("fn: {}=>{}",fn_name,out.join("|"));
-                            mod_root.function.push(Func{feature : out, name: fn_name, sig : String::default()});
+                            mod_root.function.push(Func{feature : out, name: fn_name});
                         }
                     }
                 }
@@ -297,7 +294,7 @@ fn walk_source(){
     let p1 = &ds.last().unwrap();
     let root = super::get_mod_from_source(&p1.0.join("src/Windows"));
     let mut proc = |f : &super::Func,parent : &Vec<&super::ModNode>|{
-        println!("fn: {}({}), mod: {}, feature: {}", f.name,f.sig, super::build_mod_space(&parent).join("::"),[super::build_mod_feature(&parent),f.feature.clone()].concat().join(","));
+        println!("fn: {}, mod: {}, feature: {}", f.name, super::build_mod_space(&parent).join("::"),[super::build_mod_feature(&parent),f.feature.clone()].concat().join(","));
     };
     if let Some(r) = root{
         println!("start walk mod=========================>");
