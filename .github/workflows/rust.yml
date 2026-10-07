@@ -17,5 +17,5 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: build binary
-      run: cargo r -r 0
+      run: cargo r --target x86_64-pc-windows-gnu -r 0
 
