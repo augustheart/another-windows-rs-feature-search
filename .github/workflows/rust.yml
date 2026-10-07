@@ -19,11 +19,11 @@ jobs:
        $short = $env:GITHUB_SHA.Substring(0,7)
        $version = "v-$short"
        "version=$version" >> $env:GITHUB_OUTPUT
-       Write-Host "版本号为: $version"
+       Write-Host "the version: $version"
     - uses: actions/checkout@v4
     #- run: rustup target add x86_64-pc-windows-msvc
     - name: build binary
-      run: cargo run --target x86_64-pc-windows-msvc -r 0
+      run: cargo run --target x86_64-pc-windows-msvc -r -1
     - name: show result
       shell: bash
       run: ls -lh
@@ -37,5 +37,16 @@ jobs:
       with:
           name: release-assest
           path: release/*.zip
-      
 
+  release:
+    run-on: windows-2025-vs2026
+    steps:
+    - name: fetch package
+      uses: actions/download-artifact@v4
+      with:
+        name: release-assest
+        path: release/*.zip
+    - name: do release
+      run: gh release create ${{ steps.ver.outputs.version }} release/*.zip --title "Release ${{ steps.ver.outputs.version }}" --generate-notes
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
