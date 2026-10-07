@@ -15,10 +15,10 @@ jobs:
     - name: get version
       id: ver
       shell: bash
-      run: 
-          VERSION=${GITHUB_SHA::7}
-          echo 'version=$VERSION' >> '$GITHUB_OUTPUT'
-          echo '$VERSION'
+      run: |
+        VERSION=${GITHUB_SHA::7}
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        echo "$VERSION"
     - uses: actions/checkout@v4
     - run: rustup target add x86_64-pc-windows-msvc
     - name: build binary
