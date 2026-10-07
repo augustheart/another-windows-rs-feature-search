@@ -46,7 +46,7 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: release-assest
-        path: release/*.zip
+        path: release
     - name: do release
       run: gh release create ${{ steps.ver.outputs.version }} release/*.zip --title "Release ${{ steps.ver.outputs.version }}" --generate-notes
       env:
