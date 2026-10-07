@@ -1,10 +1,7 @@
 name: Rust
 
 on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+   workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
@@ -15,8 +12,24 @@ jobs:
     runs-on: windows-2025-vs2026
 
     steps:
+    - name: get version
+      id: ver
+      run: 
+          VERSION=${GITHUB_SHA::7}
+          echo 'version=$VERSION' >> ’$GITHUB_OUTPUT‘
+          echo '$VERSION'
     - uses: actions/checkout@v4
     - run: rustup target add x86_64-pc-windows-msvc
     - name: build binary
       run: cargo r --target x86_64-pc-windows-msvc -r 0
+    - run: ls -lh
+    - name: make release
+      run: mkdir release
+    - run: zip -9 release/windows_rs_feature-${{steps.ver.version}}.zip *.html *.json
+    - name: upload
+      uses: actions/upload-artifact@v4
+      with:
+          name: release-assest
+          path: release/*.zip
+      
 
