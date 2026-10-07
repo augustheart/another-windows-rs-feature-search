@@ -30,7 +30,7 @@ jobs:
       run: mkdir release
     - name: build zip
       shell: bash
-      run: zip -9 release/windows_rs_feature-${{steps.ver.version}}.zip *.html *.json
+      run: 7z a -tzip -mx=9 release/windows_rs_feature-${{steps.ver.version}}.zip *.html *.json
     - name: upload
       uses: actions/upload-artifact@v4
       with:
