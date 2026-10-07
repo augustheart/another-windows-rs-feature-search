@@ -1,7 +1,8 @@
-use std::{collections::HashMap, env::self, io::Read, path::{Path, PathBuf}, process::ExitCode};
+use std::{collections::HashMap, env::self, io::{Read, Write}, path::{Path, PathBuf}, process::ExitCode};
 use syn;
 use serde_json;
 use serde::{Deserialize,Serialize};
+const TEMPL : &str = include_str!("templ.htm");
 fn main()->ExitCode {
     let mod_list = get_crate_dirs("windows");
     if mod_list.is_empty(){
@@ -22,11 +23,19 @@ fn main()->ExitCode {
                         let out_name = Path::new(&out_name_s);
 
                         println!("write result to file {}", out_name_s);
-                        if let Ok(out) = std::fs::File::create(out_name){
-                            let _ = serde_json::to_writer(out, &s);
+                        let json_str = serde_json::to_string(&s).unwrap_or_default();
+                        if let Ok(mut out) = std::fs::File::create(out_name){
+                            let _ = out.write(json_str.as_bytes());
                         }else{
                             eprintln!("create file {} fail",out_name_s);
                             return ExitCode::from(4);
+                        }
+                        let out_html_s =  "index.html";
+                        if let Ok(mut out_html) = std::fs::File::create(out_html_s){
+                            let _ = out_html.write(TEMPL.replace("{{json}}", &json_str).as_bytes());
+                        }else{
+                            eprintln!("create file {} fail", out_html_s);
+                            return ExitCode::from(5);
                         }
                     }else{
                         eprintln!("parse crate fail");
@@ -119,7 +128,7 @@ struct ModNode{
 }
 fn proc_feature(m : &syn::Meta, out : &mut Vec<String>){
     match m{
-        syn::Meta::Path(p)=>{
+        syn::Meta::Path(_)=>{
 
         },
         syn::Meta::NameValue(nv)=>{
@@ -201,7 +210,7 @@ fn get_cargo_registry_path()->String{
 }
 fn get_crate_dirs(name : &str)->Vec<(PathBuf,String)>{
     let index_str = regex::Regex::new(r##"\Aindex\.crates\.io\-.+\z"##).unwrap();
-    let crate_str = regex::Regex::new(&format!(r##"\A{}\-(\d+\.\d+\.\d+)\z"##,name)).unwrap();
+    let crate_str = regex::Regex::new(&format!(r##"\A({}\-\d+\.\d+\.\d+)\z"##,name)).unwrap();
     Path::new(get_cargo_registry_path().as_str()).read_dir().ok().into_iter()
         .flatten()
         .filter_map(|s|{

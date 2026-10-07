@@ -2,19 +2,22 @@
 name = "windows_features_searcher"
 version = "0.1.0"
 edition = "2024"
+
 [profile.release]
-opt-level = "z"        # 优先最小；想兼顾性能可用 "s"
-lto = "fat"            # 或 lto = true，全量 LTO
+opt-level = "z"
+lto = "fat"
 codegen-units = 1
-panic = "abort"        # 去掉 unwind 相关代码
-strip = "symbols"      # 去掉符号表和调试信息，也可写 strip = true
+panic = "abort"
+strip = "symbols"
 debug = false
 incremental = false
 overflow-checks = false
 debug-assertions = false
+
 [dependencies]
 regex = { version = "1.13" }
 syn = {version="3", features = ["full", "parsing","derive", "extra-traits", "visit"] }
 quote = {version="1.0"}
 serde_json = {version="1.0"}
 serde = {version="1.0", features = ["derive"]}
+windows = {version = "0.62"}

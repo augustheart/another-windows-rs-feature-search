@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>another windows-rs feature search</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, sans-serif; max-width: 60rem; margin: 2rem auto; padding: 0 1rem; }
+  h1 { font-size: 1.4rem; }
+  p { color: gray; }
+  input { width: 100%; box-sizing: border-box; font-size: 1.1rem; padding: 0.5rem; margin: 0.5rem 0 1rem; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 0.3rem 0.6rem; border-bottom: 1px solid #8884; vertical-align: top; }
+  code { font-family: ui-monospace, monospace; }
+  .feature { font-weight: bold; }
+  .none { color: gray; font-weight: normal; }
+  .status { color: gray; margin-top: 0.5rem; }
+</style>
+</head>
+<body>
+<h1>another windows-rs feature search</h1>
+<p id="ver"></p>
+<p>Type a metadata API name to find the Cargo feature(s) to enable in the <code>windows</code> or <code>windows-sys</code> crate. Rich bindings may project some metadata types to sibling crates such as <code>windows-numerics</code>. A method or function may need more than one feature when its parameters span namespaces. Matching is a case-insensitive regular expression over <code>Namespace::Name</code>.</p>
+<input id="q" placeholder="CreateFileW, IDWriteFactory, Direct3D11, ..." autofocus>
+<div id="status" class="status">Loading index&hellip;</div>
+<table><thead><tr><th>API</th><th>Feature</th></tr></thead><tbody id="results"></tbody></table>
+<script id="data" type="application/json">
+{{json}}
+</script>
+<script>
+const DATA = JSON.parse(document.getElementById('data').textContent);
+const input = document.getElementById('q');
+const status = document.getElementById('status');
+const results = document.getElementById('results');
+document.getElementById('ver').textContent = 'from ' + DATA.version;
+function run() {
+  const query = input.value.trim();
+  results.innerHTML = '';
+  if (!query) { status.textContent = DATA.func.length + ' APIs indexed.'; return; }
+  let re;
+  try { re = new RegExp(query, 'i'); } catch { re = null; }
+  let count = 0, shown = 0;
+  const rows = [];
+  for (const row of DATA.func) {
+    const name = row.name;
+    const nsIdx = row.space;
+    const fea = row.feature;
+    let build_words = function(lst){
+      let _ns = [];
+      for(const idx of nsIdx){
+        _ns.push(DATA.table[idx])
+      }
+      return _ns;
+    };
+
+    const hit = re ? re.test(name) : name.toLowerCase().includes(query.toLowerCase());
+    if (!hit) continue;
+    count++;
+    shown++;
+    const ns = build_words(nsIdx).join('::') + '::' + name;
+    const features = '"' + build_words(fea).join('", "') + '"';
+    rows.push('<tr><td><code>' + ns + '</code></td><td>' + features + '</td></tr>');
+  }
+  results.innerHTML = rows.join('');
+  status.textContent = count === 0 ? 'No matches.' : (count + ' match(es).');
+}
+
+input.addEventListener('input', run);
+run();
+</script>
+</body>
+</html>
