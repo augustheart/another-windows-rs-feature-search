@@ -63,6 +63,16 @@ jobs:
         path: release
     - uses: actions/checkout@v4
     - name: do release
-      run: gh release create "${{ needs.prepare.outputs.version }}" release/*.zip --title "Release ${{ needs.prepare.outputs.version }}" --generate-notes
+      run: |
+        Write-Host "version = [${{ needs.build.outputs.version }}]"
+        Write-Host "--- release 目录 ---"
+        if (Test-Path release) {
+          Get-ChildItem -Recurse release | Format-Table FullName, Length
+        } else {
+          Write-Host "release 目录不存在"
+        }
+        Write-Host "--- 当前目录 ---"
+        Get-ChildItem | Format-Table Name
+        gh release create "${{ needs.prepare.outputs.version }}" release/*.zip --title "Release ${{ needs.prepare.outputs.version }}" --generate-notes
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
