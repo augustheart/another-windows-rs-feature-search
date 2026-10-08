@@ -45,7 +45,7 @@ jobs:
       shell: bash
       id: win_ver
       run:  |
-        FILE = $(ls windows-*.json | head -nl)
+        FILE=$(ls windows-*.json | head -nl)
         echo "$FILE"
         if [["$FILE" ~= ^windows\-(\d+\.\d+\.\d+).json$]];then
           echo "windows crate version: ${BASH_REMATCH[1]}"
