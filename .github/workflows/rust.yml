@@ -23,6 +23,8 @@ jobs:
 
     runs-on: windows-2025-vs2026
     needs: prepare
+    outputs:
+      win_ver: ${{ steps.win.outputs.win_ver}}
     steps:
     - name: get version
       id: ver
@@ -39,11 +41,25 @@ jobs:
     - name: show result
       shell: bash
       run: ls -lh
+    - name: get crate version
+      shell: bash
+      id: win_ver
+      run:  |
+        FILE = $(ls windows-*.json | head -nl)
+        echo "$FILE"
+        if [["$FILE" ~= ^windows\-(\d+\.\d+\.\d+).json$]];then
+          echo "windows crate version: ${BASH_REMATCH[1]}"
+          echo "win_ver=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+        else
+          echo "no crate version"
+          exit 1
+        fi
+        
     - name: make release
       run: mkdir release
     - name: build zip
       shell: bash
-      run: 7z a -tzip -mx=9 release/windows_rs_feature-${{ needs.prepare.outputs.version }}.zip *.html *.json
+      run: 7z a -tzip -mx=9 release/windows_rs_feature-${{steps.win_ver}}-${{ needs.prepare.outputs.version }}.zip *.html *.json
     - name: upload
       uses: actions/upload-artifact@v4
       with:
@@ -65,6 +81,7 @@ jobs:
     - name: do release
       run: |
         Write-Host "version = [${{ needs.prepare.outputs.version }}]"
+        Write-Host "crate version = [${{ needs.build.outputs.win_ver }}]"
         Write-Host "--- release 目录 ---"
         if (Test-Path release) {
           Get-ChildItem -Recurse release | Format-Table FullName, Length
