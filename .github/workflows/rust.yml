@@ -8,7 +8,7 @@ env:
 
 jobs:
   prepare:
-
+  
     runs-on: ubuntu-22.04
     outputs:
       version: ${{ steps.ver.outputs.version }}
@@ -22,7 +22,7 @@ jobs:
   build:
 
     runs-on: windows-2025-vs2026
-
+    needs: prepare
     steps:
     - name: get version
       id: ver
