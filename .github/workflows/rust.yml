@@ -47,7 +47,7 @@ jobs:
       run:  |
         FILE=$(ls windows-*.json | head -nl)
         echo "$FILE"
-        if [["$FILE" ~= ^windows\-(\d+\.\d+\.\d+).json$]];then
+        if [[ "$FILE" =~ ^windows\-([0-9]+.[0-9]+.[0-9]+).json$ ]] ;then
           echo "windows crate version: ${BASH_REMATCH[1]}"
           echo "win_ver=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
         else
