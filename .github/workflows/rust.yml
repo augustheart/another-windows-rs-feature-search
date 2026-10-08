@@ -64,7 +64,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: do release
       run: |
-        Write-Host "version = [${{ needs.build.outputs.version }}]"
+        Write-Host "version = [${{ needs.prepare.outputs.version }}]"
         Write-Host "--- release 目录 ---"
         if (Test-Path release) {
           Get-ChildItem -Recurse release | Format-Table FullName, Length
