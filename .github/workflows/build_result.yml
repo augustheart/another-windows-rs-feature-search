@@ -1,4 +1,4 @@
-name: Rust
+name: build result
 
 on:
    workflow_dispatch:
