@@ -51,7 +51,7 @@ jobs:
           path: release/*.zip
 
   release:
-    needs: build
+    needs: [prepare, build]
     runs-on: windows-2025-vs2026
     permissions:
       contents: write
