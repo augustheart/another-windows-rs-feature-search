@@ -56,12 +56,12 @@ jobs:
     permissions:
       contents: write
     steps:
+    - uses: actions/checkout@v4
     - name: fetch package
       uses: actions/download-artifact@v4
       with:
         name: release-assest
         path: release
-    - uses: actions/checkout@v4
     - name: do release
       run: |
         Write-Host "version = [${{ needs.prepare.outputs.version }}]"
