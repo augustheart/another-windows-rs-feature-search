@@ -7,6 +7,18 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  prepare:
+
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
+    steps:
+      - name: 计算版本号
+        id: ver
+        run: |
+          VERSION="v-${GITHUB_SHA::7}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "版本号: $VERSION"
   build:
 
     runs-on: windows-2025-vs2026
@@ -31,7 +43,7 @@ jobs:
       run: mkdir release
     - name: build zip
       shell: bash
-      run: 7z a -tzip -mx=9 release/windows_rs_feature-${{steps.ver.version}}.zip *.html *.json
+      run: 7z a -tzip -mx=9 release/windows_rs_feature-${{ needs.prepare.outputs.version }}.zip *.html *.json
     - name: upload
       uses: actions/upload-artifact@v4
       with:
@@ -41,7 +53,7 @@ jobs:
   release:
     needs: build
     runs-on: windows-2025-vs2026
-    permissions: 
+    permissions:
       contents: write
     steps:
     - name: fetch package
@@ -51,6 +63,6 @@ jobs:
         path: release
     - uses: actions/checkout@v4
     - name: do release
-      run: gh release create ${{ steps.ver.outputs.version }} release/*.zip --title "Release ${{ steps.ver.outputs.version }}" --generate-notes
+      run: gh release create "${{ needs.prepare.outputs.version }}" release/*.zip --title "Release ${{ needs.prepare.outputs.version }}" --generate-notes
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
