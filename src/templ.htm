@@ -2,20 +2,28 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>another windows-rs feature search</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>windows-rs Feature Search — Find Cargo Features for windows / windows-sys APIs</title>
+<meta name="description" content="Search windows-rs metadata API names to find the Cargo feature(s) to enable in the windows or windows-sys crate. Case-insensitive regex matching over Namespace::Name.">
+<meta name="keywords" content="windows-rs, windows crate, windows-sys, Cargo features, Rust, Win32, metadata, feature search, CreateFileW, IDWriteFactory, Direct3D11">
+<meta name="author" content="windows-rs feature search">
+<meta name="robots" content="index,follow">
+<meta name="theme-color" content="#0d1117">
+<meta property="og:type" content="website">
+<meta property="og:title" content="windows-rs Feature Search">
+<meta property="og:description" content="Find the Cargo feature(s) to enable in the windows or windows-sys crate for any metadata API name.">
+<meta name="twitter:card" content="summary">
 <style>
   :root { color-scheme: light dark; }
   body { font-family: system-ui, sans-serif; max-width: 60rem; margin: 2rem auto; padding: 0 1rem; }
   h1 { font-size: 1.4rem; }
   p { color: gray; }
-  input { width: 100%; box-sizing: border-box; font-size: 1.1rem; padding: 0.5rem; margin: 0.5rem 0 1rem; }
+  input { width: 100%; box-sizing: border-box; font-size: 1.1rem; padding: .5rem; margin: .5rem 0 1rem; }
   table { border-collapse: collapse; width: 100%; }
-  th, td { text-align: left; padding: 0.3rem 0.6rem; border-bottom: 1px solid #8884; vertical-align: top; }
+  th, td { text-align: left; padding: .3rem .6rem; border-bottom: 1px solid #8884; vertical-align: top; }
   code { font-family: ui-monospace, monospace; }
-  .feature { font-weight: bold; }
-  .none { color: gray; font-weight: normal; }
-  .status { color: gray; margin-top: 0.5rem; }
+  .status { color: gray; margin-top: .5rem; }
+  tr[hidden] { display: none; }
 </style>
 </head>
 <body>
@@ -29,45 +37,76 @@
 {{json}}
 </script>
 <script>
-const DATA = JSON.parse(document.getElementById('data').textContent);
-const input = document.getElementById('q');
-const status = document.getElementById('status');
-const results = document.getElementById('results');
-document.getElementById('ver').textContent = 'from ' + DATA.version;
-function run() {
-  const query = input.value.trim();
-  results.innerHTML = '';
-  if (!query) { status.textContent = DATA.func.length + ' APIs indexed.'; return; }
-  let re;
-  try { re = new RegExp(query, 'i'); } catch { re = null; }
-  let count = 0, shown = 0;
-  const rows = [];
-  for (const row of DATA.func) {
-    const name = row.name;
-    const nsIdx = row.space;
-    const fea = row.feature;
-    let build_words = function(lst){
-      let _ns = [];
-      for(const idx of nsIdx){
-        _ns.push(DATA.table[idx])
-      }
-      return _ns;
-    };
-
-    const hit = re ? re.test(name) : name.toLowerCase().includes(query.toLowerCase());
-    if (!hit) continue;
-    count++;
-    shown++;
-    const ns = build_words(nsIdx).join('::') + '::' + name;
-    const features = '"' + build_words(fea).join('", "') + '"';
-    rows.push('<tr><td><code>' + ns + '</code></td><td>' + features + '</td></tr>');
+(() => {
+  const POOL_DEFAULT = 1000;
+  const POOL_MAX     = 10000;
+  const poolSize = Math.min(
+    Math.max(1, +(new URLSearchParams(location.search).get('pool')) || POOL_DEFAULT),
+    POOL_MAX
+  );
+  const $ = id => document.getElementById(id);
+  const D = JSON.parse($('data').textContent);
+  const q = $('q'), status = $('status'), results = $('results'), ver = $('ver');
+  const t = D.table, f = D.func, N = f.length;
+  for (let i = 0; i < N; i++) {
+    const r = f[i], sp = r.space, fe = r.feature;
+    let s = '';
+    for (let j = 0; j < sp.length; j++) s += t[sp[j]] + '::';
+    r.tx = s + r.name;
+    s = '';
+    for (let j = 0; j < fe.length; j++) s += (j ? '", "' : '"') + t[fe[j]];
+    r.ft = s + '"';
+    r.lo = r.name.toLowerCase();
   }
-  results.innerHTML = rows.join('');
-  status.textContent = count === 0 ? 'No matches.' : (count + ' match(es).');
-}
-
-input.addEventListener('input', run);
-run();
+  const pool = new Array(poolSize);
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < poolSize; i++) {
+    const tr = document.createElement('tr');
+    const td1 = document.createElement('td');
+    const code = document.createElement('code');
+    const td2 = document.createElement('td');
+    td1.append(code);
+    tr.append(td1, td2);
+    tr.hidden = true;
+    frag.append(tr);
+    pool[i] = [tr, code, td2];
+  }
+  results.append(frag);
+  ver.textContent = 'from ' + D.version + ' · pool ' + poolSize;
+  let timer, last, re;
+  const search = () => {
+    const v = q.value.trim();
+    let n = 0;
+    if (v) {
+      if (v !== last) {
+        last = v;
+        try { re = new RegExp(v, 'i'); } catch { re = null; }
+      }
+      const lo = re ? '' : v.toLowerCase();
+      for (let i = 0; i < N; i++) {
+        const r = f[i];
+        if (re ? !re.test(r.name) : !r.lo.includes(lo)) continue;
+        n++;
+        if (n <= poolSize) {
+          const p = pool[n - 1];
+          p[0].hidden = false;
+          p[1].textContent = r.tx;
+          p[2].textContent = r.ft;
+        }
+      }
+    }
+    for (let i = n; i < poolSize; i++) if (!pool[i][0].hidden) pool[i][0].hidden = true;
+    status.textContent = !v ? N + ' APIs indexed.'
+      : !n ? 'No matches.'
+      : n > poolSize ? 'Showing ' + poolSize + ' of ' + n + ' matches.'
+      : n + ' match(es).';
+  };
+  q.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(search, 80);
+  });
+  search();
+})();
 </script>
 </body>
 </html>
