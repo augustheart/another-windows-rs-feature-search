@@ -25,6 +25,9 @@
   .status { color: gray; margin-top: .5rem; }
   tr[hidden] { display: none; }
 </style>
+<script>
+var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",n="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",e={};function t(r,o){if(!e[r]){e[r]={};for(var n=0;n<r.length;n++)e[r][r.charAt(n)]=n}return e[r][o]}var i={decompressFromEncodedURIComponent:function(r){return null==r?"":""==r?null:(r=r.replace(/ /g,"+"),i._decompress(r.length,32,function(o){return t(n,r.charAt(o))}))},_decompress:function(o,n,e){var t,i,s,u,a,p,c,l=[],f=4,h=4,d=3,m="",v=[],g={val:e(0),position:n,index:1};for(t=0;t<3;t+=1)l[t]=t;for(s=0,a=Math.pow(2,2),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;switch(s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 2:return""}for(l[3]=c,i=c,v.push(c);;){if(g.index>o)return"";for(s=0,a=Math.pow(2,d),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;switch(c=s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;l[h++]=r(s),c=h-1,f--;break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;l[h++]=r(s),c=h-1,f--;break;case 2:return v.join("")}if(0==f&&(f=Math.pow(2,d),d++),l[c])m=l[c];else{if(c!==h)return null;m=i+i.charAt(0)}v.push(m),l[h++]=i+m.charAt(0),i=m,0==--f&&(f=Math.pow(2,d),d++)}}};return i}();"function"==typeof define&&define.amd?define(function(){return LZString}):"undefined"!=typeof module&&null!=module?module.exports=LZString:"undefined"!=typeof angular&&null!=angular&&angular.module("LZString",[]).factory("LZString",function(){return LZString});
+</script>
 </head>
 <body>
 <h1>another windows-rs feature search</h1>
@@ -33,8 +36,8 @@
 <input id="q" placeholder="CreateFileW, IDWriteFactory, Direct3D11, ..." autofocus>
 <div id="status" class="status">Loading index&hellip;</div>
 <table><thead><tr><th>API</th><th>Feature</th></tr></thead><tbody id="results"></tbody></table>
-<script id="data" type="application/json">
-{{json}}
+<script>
+const JDATA = "{{json}}";
 </script>
 <script>
 (() => {
@@ -45,7 +48,7 @@
     POOL_MAX
   );
   const $ = id => document.getElementById(id);
-  const D = JSON.parse($('data').textContent);
+  const D = JSON.parse(LZString.decompressFromEncodedURIComponent(JDATA));
   const q = $('q'), status = $('status'), results = $('results'), ver = $('ver');
   const t = D.table, f = D.func, N = f.length;
   for (let i = 0; i < N; i++) {
@@ -72,7 +75,7 @@
     pool[i] = [tr, code, td2];
   }
   results.append(frag);
-  ver.textContent = 'from ' + D.version + ' · pool ' + poolSize;
+  ver.textContent = 'from ' + D.version;
   let timer, last, re;
   const search = () => {
     const v = q.value.trim();

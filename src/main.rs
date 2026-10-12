@@ -2,6 +2,7 @@ use std::{collections::HashMap, env::self, io::{Write}, path::{Path, PathBuf}, p
 use syn;
 use serde_json;
 use serde::{Deserialize,Serialize};
+use lz_str::compress_to_encoded_uri_component;
 const TEMPL : &str = include_str!("templ.htm");
 fn main()->ExitCode {
     let mod_list = get_crate_dirs("windows");
@@ -40,7 +41,7 @@ fn main()->ExitCode {
                         let out_html_s =  "index.html";
                         println!("write ui file {}", out_html_s);
                         if let Ok(mut out_html) = std::fs::File::create(out_html_s){
-                            let _ = out_html.write(TEMPL.replace("{{json}}", &json_str).as_bytes());
+                            let _ = out_html.write(TEMPL.replace("{{json}}", &compress_to_encoded_uri_component(&json_str)).as_bytes());
                             println!("write {} success", out_name_s);
                         }else{
                             eprintln!("create file {} fail", out_html_s);
