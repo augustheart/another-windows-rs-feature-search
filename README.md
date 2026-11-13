@@ -8,8 +8,8 @@ So I built this tool. It uses `syn` to analyze the required features from `.carg
 
 Known issues:
 
-~~- Code needs cleanup; the tests currently only run on my machine.~~ add a static html page as search ui
-- No search UI; so far, the tool only provides a JSON-generating feature.
+~~- Code needs cleanup; the tests currently only run on my machine.~~
+~~- No search UI; so far, the tool only provides a JSON-generating feature.~~  add a static html page as search ui
 - Not all APIs are recorded
-- No release
+~~- No release~~
 - More to come
